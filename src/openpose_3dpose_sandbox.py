@@ -233,6 +233,8 @@ def main(_):
     plt.figure(2)
     smooth_curves_plot = show_anim_curves(smoothed, plt)
     #return
+    os.makedirs('gif_output', exist_ok=True)
+    os.makedirs('png', exist_ok=True)
     pngName = 'gif_output/smooth_plot.png'
     smooth_curves_plot.savefig(pngName)
     logger.info('writing gif_output/smooth_plot.png')

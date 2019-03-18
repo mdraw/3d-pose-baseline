@@ -1,5 +1,6 @@
 data/
 experiments/
+gif_output/
 *~
 *.pyc
 *.h5
