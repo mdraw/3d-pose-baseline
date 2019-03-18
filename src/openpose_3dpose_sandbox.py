@@ -43,6 +43,8 @@ def read_openpose_json(smooth=True, *args):
     #load json files
     json_files = os.listdir(openpose_output_dir)
     # check for other file types
+    # TODO: Support natural sorting. This currently errors if your file names are like 1.json, 2.json, ..., 10.json, ... because 10 gets sorted before 2.
+    # Make sure to left-zero-pad file names before sorting, otherwise this will sort wrongly.
     json_files = sorted([filename for filename in json_files if filename.endswith(".json")])
     cache = {}
     smoothed = {}
@@ -168,7 +170,7 @@ def read_openpose_json(smooth=True, *args):
             elif frame in tail_frame_block:
                 back += cache[frame-neighbor]
             else:
-                # between frames, get value of xy in bi-directional frames(current frame -+ 3)     
+                # between frames, get value of xy in bi-directional frames(current frame -+ 3)
                 forward += cache[frame+neighbor]
                 back += cache[frame-neighbor]
 
@@ -238,6 +240,8 @@ def main(_):
     pngName = 'gif_output/smooth_plot.png'
     smooth_curves_plot.savefig(pngName)
     logger.info('writing gif_output/smooth_plot.png')
+
+    frames = []  # Store frames so they can be saved later
     
     if FLAGS.interpolation:
         logger.info("start interpolation")
@@ -392,7 +396,10 @@ def main(_):
             if FLAGS.write_gif:
                 png_lib.append(imageio.imread(pngName))
             before_pose = poses3d
+            frames.append(poses3d[0])
 
+
+    np.savetxt('p3d.txt', np.stack(frames))  # TODO: Make this configurable  # TODO: Reshape?
     if FLAGS.write_gif:
         if FLAGS.interpolation:
             #take every frame on gif_fps * multiplier_inv
