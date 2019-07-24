@@ -34,6 +34,20 @@ def show_anim_curves(anim_dict, _plt):
         _plt.plot(y, 'g', linewidth=0.2)
     return _plt
 
+# In a perfect world, this would be an actual natural sorting function
+# (see https://natsort.readthedocs.io/), but that would increase complexity
+# and I don't need anything outside of integer sorting currently, so...
+def basenum(fname):
+    """For sorting of json files."""
+    basename = os.path.basename(fname)
+    num = os.path.splitext(basename)[0]  # Without extension
+    if not num.isdigit():
+        raise RuntimeError(
+            f'Invalid file name {fname}\n'
+            'Input JSON file names must be of the form <NUM>.json, where <NUM> is an integer number.'
+        )
+    return int(num)
+
 def read_openpose_json(smooth=True, *args):
     # openpose output format:
     # [x1,y1,c1,x2,y2,c2,...]
@@ -43,9 +57,11 @@ def read_openpose_json(smooth=True, *args):
     #load json files
     json_files = os.listdir(openpose_output_dir)
     # check for other file types
-    # TODO: Support natural sorting. This currently errors if your file names are like 1.json, 2.json, ..., 10.json, ... because 10 gets sorted before 2.
-    # Make sure to left-zero-pad file names before sorting, otherwise this will sort wrongly.
-    json_files = sorted([filename for filename in json_files if filename.endswith(".json")])
+    # Using custom basenum key for natural sorting, so that file names like 1.json, 2.json, ..., 10.json without left 0-padding are supported.
+    json_files = sorted(
+        [filename for filename in json_files if filename.endswith(".json")],
+        key=basenum
+    )
     cache = {}
     smoothed = {}
     ### extract x,y and ignore confidence score
